@@ -346,14 +346,29 @@ function setStatus(cls, msg, spinner) {
 async function translateAndSpeak(text) {
   setStatus('translating', '🌐 Translating...', true);
   try {
+    // Try MyMemory first
     var pair = sourceLang + '|' + targetLang;
     var r = await fetch('https://api.mymemory.translated.net/get?q=' + encodeURIComponent(text) + '&langpair=' + pair);
     var d = await r.json();
-    var translated = (d.responseData && d.responseData.translatedText) ? d.responseData.translatedText : text;
-    if (!translated || translated === text) throw new Error('no result');
+    var translated = (d.responseData && d.responseData.translatedText) ? d.responseData.translatedText : '';
+    var ok = translated && translated.length > 0 && translated !== text && translated !== 'FUCK' && translated !== 'BULLSHIT';
+    if (!ok) throw new Error('myMemory failed');
     finishWithTranslation(text, translated);
   } catch(e) {
-    setStatus('error', '😕 Translation failed. Check internet!', true);
+    // Fallback: Google Translate iframe method
+    try {
+      var gpair = (sourceLang === 'en' ? 'en' : sourceLang === 'zh' ? 'zh-CN' : sourceLang === 'ja' ? 'ja' : sourceLang) + '_' + (targetLang === 'en' ? 'en' : targetLang === 'zh' ? 'zh-CN' : targetLang === 'ja' ? 'ja' : targetLang);
+      var greq = await fetch('https://translate.googleapis.com/translate_a/single?client=gtx&sl=' + (sourceLang === 'en' ? 'en' : sourceLang === 'zh' ? 'zh-CN' : sourceLang) + '&tl=' + (targetLang === 'en' ? 'en' : targetLang === 'zh' ? 'zh-CN' : targetLang) + '&dt=t&q=' + encodeURIComponent(text));
+      var gd = await greq.json();
+      if (gd && gd[0]) {
+        var gtrans = gd[0].map(function(item) { return item[0]; }).join('');
+        finishWithTranslation(text, gtrans);
+      } else {
+        setStatus('error', '😕 Could not translate that. Try again!', true);
+      }
+    } catch(e2) {
+      setStatus('error', '😕 Could not translate. Try again!', true);
+    }
   }
 }
 function finishWithTranslation(original, translated) {
