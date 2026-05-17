@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Voice Buddy 🌟</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #4A90E2;
+      --secondary: #FF6B9D;
+      --accent: #FFD93D;
+      --bg: #F0F4FF;
+      --card: #FFFFFF;
+      --text: #2D3748;
+      --text-light: #718096;
+      --shadow: 0 8px 32px rgba(74, 144, 226, 0.2);
+      --radius: 24px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow-x: hidden;
+    }
+    #home-page, #record-page, #result-page { display: none; flex-direction: column; align-items: center; width: 100%; padding: 24px; }
+    #home-page.active, #record-page.active, #result-page.active { display: flex; }
+    .logo { font-size: 2.4rem; font-weight: 800; background: linear-gradient(135deg, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 28px 0 4px; }
+    .logo-sub { font-size: 1rem; color: var(--text-light); font-weight: 600; margin-bottom: 8px; }
+    .lang-selector { display: flex; align-items: center; gap: 16px; background: var(--card); padding: 18px 28px; border-radius: var(--radius); box-shadow: var(--shadow); margin: 20px 0; }
+    .lang-btn { display: flex; flex-direction: column; align-items: center; gap: 6px; background: none; border: 3px solid transparent; border-radius: 16px; padding: 12px 18px; cursor: pointer; transition: all 0.25s; font-family: 'Nunito', sans-serif; font-size: 0.95rem; font-weight: 700; color: var(--text); min-width: 90px; }
+    .lang-btn:hover { background: #F0F4FF; }
+    .lang-btn .flag { font-size: 2.8rem; line-height: 1; }
+    .lang-btn .label { font-size: 0.8rem; color: var(--text-light); }
+    .swap-btn { width: 50px; height: 50px; border-radius: 50%; border: none; background: var(--accent); font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.3s, box-shadow 0.3s; box-shadow: 0 4px 12px rgba(255, 217, 61, 0.4); }
+    .swap-btn:hover { transform: scale(1.1) rotate(15deg); }
+    .more-lang-btn { background: linear-gradient(135deg, var(--secondary), #FF8DB5); color: white; border: none; padding: 14px 32px; font-size: 1rem; font-weight: 700; font-family: 'Nunito', sans-serif; border-radius: 50px; cursor: pointer; box-shadow: 0 6px 20px rgba(255, 107, 157, 0.35); transition: transform 0.2s, box-shadow 0.2s; margin-top: 8px; display: flex; align-items: center; gap: 8px; }
+    .more-lang-btn:hover { transform: scale(1.05); }
+    .start-btn { background: linear-gradient(135deg, var(--primary), #5BA0F5); color: white; border: none; padding: 18px 44px; font-size: 1.2rem; font-weight: 700; font-family: 'Nunito', sans-serif; border-radius: 50px; cursor: pointer; box-shadow: 0 8px 24px rgba(74, 144, 226, 0.4); transition: transform 0.2s, box-shadow 0.2s; margin-top: 10px; }
+    .start-btn:hover { transform: scale(1.05); }
+    .start-btn:active { transform: scale(0.97); }
+    .instruction { font-size: 0.9rem; color: var(--text-light); font-weight: 600; text-align: center; max-width: 280px; margin-top: 10px; line-height: 1.5; }
+    .top-bar { display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: 400px; margin-top: 16px; }
+    .back-btn { background: var(--card); border: none; width: 46px; height: 46px; border-radius: 14px; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow); transition: transform 0.2s; }
+    .back-btn:hover { transform: scale(1.08); }
+    .lang-pair { font-size: 0.9rem; font-weight: 700; background: var(--card); padding: 8px 14px; border-radius: 20px; box-shadow: var(--shadow); }
+    .mic-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; gap: 18px; min-height: 420px; }
+    .mic-btn { width: 170px; height: 170px; border-radius: 50%; border: none; background: linear-gradient(135deg, var(--primary), var(--secondary)); box-shadow: 0 0 0 0 rgba(74, 144, 226, 0.4); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; position: relative; -webkit-user-select: none; user-select: none; touch-action: none; }
+    .mic-btn:active { transform: scale(0.93); }
+    .mic-btn.listening { animation: micPulse 1.4s ease-in-out infinite; }
+    @keyframes micPulse { 0% { box-shadow: 0 0 0 0 rgba(74, 144, 226, 0.6); } 70% { box-shadow: 0 0 0 26px rgba(74, 144, 226, 0); } 100% { box-shadow: 0 0 0 0 rgba(74, 144, 226, 0); } }
+    .mic-icon { font-size: 4.5rem; color: white; }
+    .status-text { font-size: 1.15rem; font-weight: 700; color: var(--text); min-height: 28px; transition: color 0.3s; }
+    .status-text.listening { color: var(--primary); }
+    .status-text.translating { color: var(--secondary); }
+    .status-text.speaking { color: #2ECC71; }
+    .status-text.error { color: #E74C3C; }
+    .recognized-text { background: var(--card); padding: 14px 20px; border-radius: 16px; box-shadow: var(--shadow); width: 100%; max-width: 400px; font-size: 1rem; font-weight: 600; text-align: center; min-height: 54px; display: flex; align-items: center; justify-content: center; word-break: break-word; color: var(--text-light); }
+    .result-original { font-size: 1rem; font-weight: 700; color: var(--text-light); background: var(--card); padding: 14px 20px; border-radius: var(--radius); box-shadow: var(--shadow); width: 100%; max-width: 420px; text-align: center; margin: 20px 0 10px; }
+    .result-arrow { font-size: 1.8rem; margin: 2px 0; animation: bounce 1s ease infinite; }
+    @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+    .result-translated { font-size: 1.15rem; font-weight: 800; color: var(--primary); background: linear-gradient(135deg, var(--card), #E8F1FF); padding: 18px 24px; border-radius: var(--radius); box-shadow: var(--shadow); width: 100%; max-width: 420px; text-align: center; border: 3px solid var(--primary); }
+    .result-btns { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; justify-content: center; }
+    .result-btn { padding: 13px 24px; border: none; border-radius: 50px; font-size: 0.95rem; font-weight: 700; font-family: 'Nunito', sans-serif; cursor: pointer; transition: transform 0.2s; }
+    .result-btn:hover { transform: scale(1.05); }
+    .result-btn.try-again { background: var(--secondary); color: white; box-shadow: 0 4px 16px rgba(255, 107, 157, 0.4); }
+    .result-btn.change-lang { background: var(--card); color: var(--text); box-shadow: var(--shadow); }
+    .spinner { width: 36px; height: 36px; border: 4px solid #E8F4FF; border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; display: none; }
+    .spinner.active { display: block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .sparkle { position: fixed; pointer-events: none; font-size: 1.6rem; animation: sparkleFloat 1.2s ease-out forwards; z-index: 100; }
+    @keyframes sparkleFloat { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-90px) scale(0.4); } }
+    #lang-picker { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 200; align-items: center; justify-content: center; }
+    #lang-picker.open { display: flex; }
+    .picker-box { background: white; border-radius: 24px; padding: 22px; width: 92%; max-width: 380px; max-height: 78vh; overflow-y: auto; }
+    .picker-title { font-weight: 800; font-size: 1.1rem; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
+    .picker-close { background: none; border: none; font-size: 1.4rem; cursor: pointer; padding: 4px; }
+    .picker-done { background: linear-gradient(135deg, var(--primary), #5BA0F5); color: white; border: none; padding: 10px 24px; font-size: 0.95rem; font-weight: 700; font-family: 'Nunito', sans-serif; border-radius: 50px; cursor: pointer; transition: transform 0.2s; }
+    .picker-done:hover { transform: scale(1.05); }
+    .lang-search { width: 100%; padding: 11px 14px; border: 2px solid #E8F4FF; border-radius: 14px; font-size: 0.95rem; font-family: 'Nunito', sans-serif; outline: none; margin-bottom: 12px; }
+    .lang-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .lang-option { display: flex; align-items: center; gap: 8px; padding: 11px 12px; border: 2px solid #E8F4FF; border-radius: 14px; background: white; cursor: pointer; font-family: 'Nunito', sans-serif; font-size: 0.9rem; font-weight: 600; transition: all 0.2s; color: var(--text); }
+    .lang-option:hover { border-color: var(--primary); background: #EBF4FF; }
+    .lang-option .flag { font-size: 1.4rem; }
+    .lang-option.current { border-color: var(--primary); background: #D6EBFF; }
+    .footer-note { font-size: 0.75rem; color: var(--text-light); text-align: center; margin: 16px 0; padding: 0 20px; }
+  </style>
+</head>
+<body>
+<div id="home-page" class="active">
+  <div class="logo">Voice Buddy 🌟</div>
+  <div class="logo-sub">Your pocket translator friend!</div>
+  <div class="lang-selector">
+    <button class="lang-btn" id="src-btn" onclick="openPicker('source')">
+      <span class="flag" id="src-flag">🇨🇳</span>
+      <span class="label" id="src-name">Chinese</span>
+    </button>
+    <button class="swap-btn" onclick="swapLang()" title="Swap">⇄</button>
+    <button class="lang-btn" id="tgt-btn" onclick="openPicker('target')">
+      <span class="flag" id="tgt-flag">🇬🇧</span>
+      <span class="label" id="tgt-name">English</span>
+    </button>
+  </div>
+  <button class="more-lang-btn" onclick="openPicker('source')">🌍 100+ Languages</button>
+  <button class="start-btn" onclick="goRecord()">🎤 START TALKING</button>
+  <p class="instruction">Tap a language to change it.<br>Hold the button to talk!</p>
+</div>
+<div id="record-page">
+  <div class="top-bar">
+    <button class="back-btn" onclick="goHome()">🏠</button>
+    <div class="lang-pair" id="lang-pair">🇨🇳 Chinese → 🇬🇧 English</div>
+    <div style="width:46px"></div>
+  </div>
+  <div class="mic-area">
+    <div class="recognized-text" id="recognized-text">—</div>
+    <button class="mic-btn" id="mic-btn" onpointerdown="startListening()" onpointerup="stopListening()" onpointercancel="stopListening()">
+      <span class="mic-icon">🎤</span>
+    </button>
+    <div class="status-text" id="status-text">Hold to talk!</div>
+    <div class="spinner" id="spinner"></div>
+    <p class="instruction">Hold the button, speak in <strong id="from-lang">Chinese</strong>, and I will translate it!</p>
+  </div>
+</div>
+<div id="result-page">
+  <div class="top-bar" style="margin-top:20px">
+    <button class="back-btn" onclick="goHome()">🏠</button>
+    <div class="lang-pair" id="result-lang-pair">🇨🇳 → 🇬🇧</div>
+    <div style="width:46px"></div>
+  </div>
+  <div style="display:flex;flex-direction:column;align-items:center;width:100%">
+    <div class="result-original" id="result-original">Hello!</div>
+    <div class="result-arrow">⬇️</div>
+    <div class="result-translated" id="result-translated">你好！</div>
+  </div>
+  <div class="result-btns">
+    <button class="result-btn try-again" onclick="goRecord()">🔄 Try Again</button>
+    <button class="result-btn change-lang" onclick="goHome()">🔀 Change Language</button>
+  </div>
+</div>
+<div id="lang-picker">
+  <div class="picker-box">
+    <div class="picker-title">
+      <span id="picker-title">🌍 Pick a language</span>
+      <button class="picker-close" onclick="closePicker()">✕</button>
+    </div>
+    <input type="text" class="lang-search" id="lang-search" placeholder="Search languages..." oninput="filterLangs()">
+    <div class="lang-grid" id="lang-grid"></div>
+    <div style="text-align:center;margin-top:16px">
+      <button class="picker-done" onclick="closePicker()">Done ✅</button>
+    </div>
+  </div>
+</div>
+<p class="footer-note">Works best in Chrome or Safari.<br>Needs microphone permission.</p>
+
+<script>
+var POPULAR_LANGS = [
+  {code:'en',name:'English',flag:'🇬🇧'},{code:'zh',name:'Chinese',flag:'🇨🇳'},
+  {code:'es',name:'Spanish',flag:'🇪🇸'},{code:'fr',name:'French',flag:'🇫🇷'},
+  {code:'de',name:'German',flag:'🇩🇪'},{code:'ja',name:'Japanese',flag:'🇯🇵'},
+  {code:'ko',name:'Korean',flag:'🇰🇷'},{code:'it',name:'Italian',flag:'🇮🇹'},
+  {code:'pt',name:'Portuguese',flag:'🇵🇹'},{code:'ru',name:'Russian',flag:'🇷🇺'},
+  {code:'ar',name:'Arabic',flag:'🇸🇦'},{code:'yue',name:'Cantonese',flag:'🇭🇰'}
+];
+var ALL_LANGS = [
+  {code:'en',name:'English',flag:'🇬🇧'},{code:'zh',name:'Chinese',flag:'🇨🇳'},
+  {code:'es',name:'Spanish',flag:'🇪🇸'},{code:'fr',name:'French',flag:'🇫🇷'},
+  {code:'de',name:'German',flag:'🇩🇪'},{code:'ja',name:'Japanese',flag:'🇯🇵'},
+  {code:'ko',name:'Korean',flag:'🇰🇷'},{code:'it',name:'Italian',flag:'🇮🇹'},
+  {code:'pt',name:'Portuguese',flag:'🇵🇹'},{code:'ru',name:'Russian',flag:'🇷🇺'},
+  {code:'ar',name:'Arabic',flag:'🇸🇦'},{code:'yue',name:'Cantonese',flag:'🇭🇰'},
+  {code:'af',name:'Afrikaans',flag:'🇿🇦'},{code:'sq',name:'Albanian',flag:'🇦🇱'},
+  {code:'am',name:'Amharic',flag:'🇪🇹'},{code:'hy',name:'Armenian',flag:'🇦🇲'},
+  {code:'az',name:'Azerbaijani',flag:'🇦🇿'},{code:'eu',name:'Basque',flag:'🇪🇸'},
+  {code:'be',name:'Belarusian',flag:'🇧🇾'},{code:'bn',name:'Bengali',flag:'🇧🇩'},
+  {code:'bs',name:'Bosnian',flag:'🇧🇦'},{code:'bg',name:'Bulgarian',flag:'🇧🇬'},
+  {code:'ca',name:'Catalan',flag:'🇪🇸'},{code:'ceb',name:'Cebuano',flag:'🇵🇭'},
+  {code:'ny',name:'Chichewa',flag:'🇲🇼'},{code:'co',name:'Corsican',flag:'🇫🇷'},
+  {code:'hr',name:'Croatian',flag:'🇭🇷'},{code:'cs',name:'Czech',flag:'🇨🇿'},
+  {code:'da',name:'Danish',flag:'🇩🇰'},{code:'nl',name:'Dutch',flag:'🇳🇱'},
+  {code:'eo',name:'Esperanto',flag:'🌍'},{code:'et',name:'Estonian',flag:'🇪🇪'},
+  {code:'fil',name:'Filipino',flag:'🇵🇭'},{code:'fi',name:'Finnish',flag:'🇫🇮'},
+  {code:'fy',name:'Frisian',flag:'🇳🇱'},{code:'gl',name:'Galician',flag:'🇪🇸'},
+  {code:'ka',name:'Georgian',flag:'🇬🇪'},{code:'el',name:'Greek',flag:'🇬🇷'},
+  {code:'gu',name:'Gujarati',flag:'🇮🇳'},{code:'ht',name:'Haitian Creole',flag:'🇭🇹'},
+  {code:'ha',name:'Hausa',flag:'🇳🇪'},{code:'haw',name:'Hawaiian',flag:'🇺🇸'},
+  {code:'he',name:'Hebrew',flag:'🇮🇱'},{code:'hi',name:'Hindi',flag:'🇮🇳'},
+  {code:'hmn',name:'Hmong',flag:'🇨🇳'},{code:'hu',name:'Hungarian',flag:'🇭🇺'},
+  {code:'is',name:'Icelandic',flag:'🇮🇸'},{code:'ig',name:'Igbo',flag:'🇳🇬'},
+  {code:'id',name:'Indonesian',flag:'🇮🇩'},{code:'ga',name:'Irish',flag:'🇮🇪'},
+  {code:'jv',name:'Javanese',flag:'🇮🇩'},{code:'kn',name:'Kannada',flag:'🇮🇳'},
+  {code:'kk',name:'Kazakh',flag:'🇰🇿'},{code:'km',name:'Khmer',flag:'🇰🇭'},
+  {code:'ku',name:'Kurdish',flag:'🇮🇷'},{code:'ky',name:'Kyrgyz',flag:'🇰🇬'},
+  {code:'lo',name:'Lao',flag:'🇱🇦'},{code:'la',name:'Latin',flag:'🇮🇹'},
+  {code:'lv',name:'Latvian',flag:'🇱🇻'},{code:'lt',name:'Lithuanian',flag:'🇱🇹'},
+  {code:'lb',name:'Luxembourgish',flag:'🇱🇺'},{code:'mk',name:'Macedonian',flag:'🇲🇰'},
+  {code:'mg',name:'Malagasy',flag:'🇲🇬'},{code:'ms',name:'Malay',flag:'🇲🇾'},
+  {code:'ml',name:'Malayalam',flag:'🇮🇳'},{code:'mt',name:'Maltese',flag:'🇲🇹'},
+  {code:'mi',name:'Maori',flag:'🇳🇿'},{code:'mr',name:'Marathi',flag:'🇮🇳'},
+  {code:'mn',name:'Mongolian',flag:'🇲🇳'},{code:'my',name:'Myanmar',flag:'🇲🇲'},
+  {code:'ne',name:'Nepali',flag:'🇳🇵'},{code:'nb',name:'Norwegian',flag:'🇳🇴'},
+  {code:'ps',name:'Pashto',flag:'🇦🇫'},{code:'fa',name:'Persian',flag:'🇮🇷'},
+  {code:'pl',name:'Polish',flag:'🇵🇱'},{code:'pa',name:'Punjabi',flag:'🇮🇳'},
+  {code:'ro',name:'Romanian',flag:'🇷🇴'},{code:'sm',name:'Samoan',flag:'🇼🇸'},
+  {code:'gd',name:'Scots Gaelic',flag:'🏴󠁧󠁢󠁳󠁣󠁴󠁿'},{code:'sr',name:'Serbian',flag:'🇷🇸'},
+  {code:'st',name:'Sesotho',flag:'🇱🇸'},{code:'sn',name:'Shona',flag:'🇿🇼'},
+  {code:'sd',name:'Sindhi',flag:'🇵🇰'},{code:'si',name:'Sinhala',flag:'🇱🇰'},
+  {code:'sk',name:'Slovak',flag:'🇸🇰'},{code:'sl',name:'Slovenian',flag:'🇸🇮'},
+  {code:'so',name:'Somali',flag:'🇸🇴'},{code:'xh',name:'Sotho',flag:'🇿🇦'},
+  {code:'su',name:'Sundanese',flag:'🇮🇩'},{code:'sw',name:'Swahili',flag:'🇰🇪'},
+  {code:'sv',name:'Swedish',flag:'🇸🇪'},{code:'tg',name:'Tajik',flag:'🇹🇯'},
+  {code:'ta',name:'Tamil',flag:'🇮🇳'},{code:'te',name:'Telugu',flag:'🇮🇳'},
+  {code:'th',name:'Thai',flag:'🇹🇭'},{code:'tr',name:'Turkish',flag:'🇹🇷'},
+  {code:'uk',name:'Ukrainian',flag:'🇺🇦'},{code:'ur',name:'Urdu',flag:'🇵🇰'},
+  {code:'uz',name:'Uzbek',flag:'🇺🇿'},{code:'vi',name:'Vietnamese',flag:'🇻🇳'},
+  {code:'cy',name:'Welsh',flag:'🏴󠁧󠁢󠁷󠁬󠁳󠁿'},{code:'xh',name:'Xhosa',flag:'🇿🇦'},
+  {code:'yi',name:'Yiddish',flag:'🇺🇸'},{code:'yo',name:'Yoruba',flag:'🇳🇬'},
+  {code:'zu',name:'Zulu',flag:'🇿🇦'}
+];
+var sourceLang = 'zh';
+var targetLang = 'en';
+var isListening = false;
+var recognition = null;
+var lastResult = { original: '', translated: '' };
+var pickerMode = 'source';
+window.onload = function() { updateLangPairUI(); };
+function showPage(id) {
+  var pages = ['home-page','record-page','result-page'];
+  for (var i = 0; i < pages.length; i++) { document.getElementById(pages[i]).classList.remove('active'); }
+  document.getElementById(id).classList.add('active');
+}
+function goHome() { showPage('home-page'); resetRecord(); }
+function goRecord() { showPage('record-page'); resetRecord(); }
+function resetRecord() {
+  isListening = false;
+  var btn = document.getElementById('mic-btn');
+  if (btn) btn.classList.remove('listening');
+  var st = document.getElementById('status-text');
+  if (st) { st.textContent = 'Hold to talk!'; st.className = 'status-text'; }
+  var rt = document.getElementById('recognized-text');
+  if (rt) rt.textContent = '—';
+  var sp = document.getElementById('spinner');
+  if (sp) sp.classList.remove('active');
+  var inst = document.getElementById('from-lang');
+  if (inst) inst.textContent = getLangName(sourceLang);
+  if (recognition) recognition.abort();
+}
+function openPicker(mode) {
+  pickerMode = mode;
+  document.getElementById('picker-title').textContent = mode === 'source' ? '🌍 I speak...' : '🌍 Translate to...';
+  document.getElementById('lang-search').value = '';
+  renderLangGrid(ALL_LANGS);
+  document.getElementById('lang-picker').classList.add('open');
+}
+function closePicker() { document.getElementById('lang-picker').classList.remove('open'); }
+function filterLangs() {
+  var q = document.getElementById('lang-search').value.toLowerCase();
+  renderLangGrid(ALL_LANGS.filter(function(l){ return l.name.toLowerCase().indexOf(q) !== -1 || l.code.indexOf(q) !== -1; }));
+}
+function renderLangGrid(list) {
+  var grid = document.getElementById('lang-grid');
+  var current = pickerMode === 'source' ? sourceLang : targetLang;
+  var html = '';
+  for (var i = 0; i < list.length; i++) {
+    var l = list[i];
+    var isCurrent = l.code === current;
+    html += '<button class="lang-option' + (isCurrent ? ' current' : '') + '" onclick="pickLang(\'' + l.code + '\')">' +
+      '<span class="flag">' + l.flag + '</span><span>' + l.name + '</span>' +
+      (isCurrent ? '<span style="margin-left:auto;font-size:0.8rem;color:var(--primary)">✓</span>' : '') + '</button>';
+  }
+  grid.innerHTML = html;
+}
+function pickLang(code) {
+  if (pickerMode === 'source') {
+    if (code === targetLang) { swapLang(); }
+    else { sourceLang = code; }
+  } else {
+    if (code === sourceLang) { swapLang(); }
+    else { targetLang = code; }
+  }
+  updateLangBtns();
+  updateLangPairUI();
+  closePicker();
+}
+function swapLang() { var tmp = sourceLang; sourceLang = targetLang; targetLang = tmp; updateLangBtns(); updateLangPairUI(); }
+function updateLangBtns() {
+  document.getElementById('src-flag').textContent = getLangFlag(sourceLang);
+  document.getElementById('src-name').textContent = getLangName(sourceLang);
+  document.getElementById('tgt-flag').textContent = getLangFlag(targetLang);
+  document.getElementById('tgt-name').textContent = getLangName(targetLang);
+}
+function updateLangPairUI() {
+  var sf = getLangFlag(sourceLang), tf = getLangFlag(targetLang);
+  var sn = getLangName(sourceLang), tn = getLangName(targetLang);
+  document.getElementById('lang-pair').textContent = sf + ' ' + sn + ' → ' + tf + ' ' + tn;
+  var rlp = document.getElementById('result-lang-pair');
+  if (rlp) rlp.textContent = sf + ' → ' + tf;
+  var fl = document.getElementById('from-lang');
+  if (fl) fl.textContent = sn;
+  try { localStorage.setItem('vb_src', sourceLang); localStorage.setItem('vb_tgt', targetLang); } catch(e) {}
+}
+function getLangFlag(code) { for (var i = 0; i < ALL_LANGS.length; i++) { if (ALL_LANGS[i].code === code) return ALL_LANGS[i].flag; } return '🌍'; }
+function getLangName(code) { for (var i = 0; i < ALL_LANGS.length; i++) { if (ALL_LANGS[i].code === code) return ALL_LANGS[i].name; } return code; }
+function startListening() {
+  if (isListening) return;
+  isListening = true;
+  document.getElementById('mic-btn').classList.add('listening');
+  setStatus('listening', '🤔 Listening...');
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { setStatus('error', '😕 Use Chrome or Safari!', true); return; }
+  recognition = new SR();
+  recognition.lang = sourceLang === 'zh' ? 'zh-CN' : sourceLang === 'yue' ? 'yue-CN' : sourceLang === 'en' ? 'en-US' : sourceLang;
+  recognition.continuous = false;
+  recognition.interimResults = false;
+  recognition.onresult = function(e) {
+    var text = e.results[0][0].transcript;
+    document.getElementById('recognized-text').textContent = text;
+    translateAndSpeak(text);
+  };
+  recognition.onerror = function(e) {
+    if (e.error === 'no-speech') setStatus('error', '🤔 Could not hear you. Try again!', true);
+    else if (e.error === 'not-allowed') setStatus('error', '🔒 Allow mic in browser settings!', true);
+    else setStatus('error', '😕 Oops! Try again?', true);
+    isListening = false;
+    document.getElementById('mic-btn').classList.remove('listening');
+  };
+  recognition.onend = function() { isListening = false; };
+  try { recognition.start(); } catch(e) { console.error(e); }
+}
+function stopListening() {
+  if (!isListening) return;
+  isListening = false;
+  document.getElementById('mic-btn').classList.remove('listening');
+  if (recognition) recognition.stop();
+}
+function setStatus(cls, msg, spinner) {
+  var el = document.getElementById('status-text');
+  if (el) { el.textContent = msg; el.className = 'status-text ' + cls; }
+  var sp = document.getElementById('spinner');
+  if (sp) sp.classList.toggle('active', !!spinner);
+}
+async function translateAndSpeak(text) {
+  setStatus('translating', '🌐 Translating...', true);
+  try {
+    var pair = sourceLang + '|' + targetLang;
+    var r = await fetch('https://api.mymemory.translated.net/get?q=' + encodeURIComponent(text) + '&langpair=' + pair);
+    var d = await r.json();
+    var translated = (d.responseData && d.responseData.translatedText) ? d.responseData.translatedText : text;
+    if (!translated || translated === text) throw new Error('no result');
+    finishWithTranslation(text, translated);
+  } catch(e) {
+    setStatus('error', '😕 Translation failed. Check internet!', true);
+  }
+}
+function finishWithTranslation(original, translated) {
+  lastResult = { original: original, translated: translated };
+  setStatus('speaking', '🔊 Speaking...', true);
+  var utter = new SpeechSynthesisUtterance(translated);
+  var tLang = targetLang === 'zh' ? 'zh-CN' : targetLang === 'yue' ? 'yue-CN' : targetLang === 'en' ? 'en-US' : targetLang;
+  utter.lang = tLang;
+  utter.rate = 0.95;
+  utter.onend = function() {
+    spawnSparkles();
+    setTimeout(function() {
+      document.getElementById('result-original').textContent = lastResult.original;
+      document.getElementById('result-translated').textContent = lastResult.translated;
+      showPage('result-page');
+    }, 500);
+  };
+  utter.onerror = function() {
+    setTimeout(function() {
+      document.getElementById('result-original').textContent = lastResult.original;
+      document.getElementById('result-translated').textContent = lastResult.translated;
+      showPage('result-page');
+    }, 300);
+  };
+  speechSynthesis.speak(utter);
+}
+function spawnSparkles() {
+  var emojis = ['✨','🌟','💫','⭐','🎉'];
+  for (var i = 0; i < 8; i++) {
+    var el = document.createElement('div');
+    el.className = 'sparkle';
+    el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+    el.style.left = (15 + Math.random() * 70) + 'vw';
+    el.style.top = (35 + Math.random() * 35) + 'vh';
+    el.style.animationDelay = (Math.random() * 0.4) + 's';
+    document.body.appendChild(el);
+    setTimeout(function() { el.remove(); }, 1400);
+  }
+}
+speechSynthesis.onvoiceschanged = function() {};
+</script>
+</body>
+</html>
